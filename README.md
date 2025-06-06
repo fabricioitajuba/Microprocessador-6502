@@ -1,6 +1,6 @@
 # Microprocessador-6502
 Exemplo de programas utilizando o Microprocessador 6502 com o TK2000
-
+```
 Os exemplos foram executados através de um emulador do TK2000 que pode ser baixado:
 https://datassette.org/softwares/br-brasil-aplicativos-tk-2000-mpf-ii-apple-softwares/00-emulador-tk2000
 
@@ -23,7 +23,7 @@ Memória->Importa (digite o "endereço base do programa" em "inteiro")
 ## Memória do TK2000: 
 
 65536 posições dividida em páginas de 256 bytes = 256 páginas
-```
+
 RAM: 192 páginas - 0000H-BFFFH
 I/O:   1 página  - C000H-C0FFH
 ROM: 63 páginas  - C100H-FFFFH
