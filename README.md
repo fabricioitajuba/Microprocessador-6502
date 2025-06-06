@@ -63,4 +63,91 @@ C05AH - Selecionador de ROM
 C05BH - Selecionador de RAM
 C05EH - Linha que seleciona a tecla Ctrl (baixo)
 C05FH - Linha que seleciona a tecla Ctrl (alto)
+
+- Entrar no monitor:
+>LM
+
+- Sair do monitor:
+@<Ctrl+C> <ENTER>
+
+Examinar posições:
+@0400 <ENTER>
+
+Examinar várias posições:
+@0400.040C <ENTER>
+
+Editar programas (no final deve ter RTS):
+@0400:A9 C1 20 ED FD 18 69 01 C9 DB D0 F6 60 <ENTER>
+
+Executar programas:
+@0400G <ENTER>
+
+Disassembler:
+@0400L
+0400	A9 C1		LDA #$C1
+0402	20 ED FD	JSR $FDED
+0405	18		CLC
+0406	69 01		ADC #$01
+0408	C9 DB		CMP #$DB
+040A	D0 F6		BNE $0402
+040C	60		RTS
+
+- teste:
+@0410:A9 FA 20 4A FF 60
+
+<Ctrl+E> <ENTER> "Podemos ver o conteúdo do acumulador alterado"
+
+	A=00 X=00 Y=00 P=A0 S=F2
+
+@0410L
+
+0410	A9 FA		LDA #$FA
+0412	20 4A FF	JSR $FF4A
+0415	60		RTS
+
+@0410G
+
+<Ctrl+E> <ENTER> "Podemos ver o conteúdo do acumulador alterado"
+
+	A=FA X=00 Y=00 P=A0 S=F2
+
+### Mini-Assembler (PÁGINA 18)
+Para entrar do monitor: C192G <ENTER>
+Para sair do monitor: FF61G <ENTER>
+
+Programa:
+
+!0410:LDA #$FA
+! JSR $FF4A
+! RTS
+
+Executar
+!$0410G
+
+Algumas sub-rotinas:
+- FF4AH - Atualializa as posições de memória referente ao registradores
+
+<Ctrl+E> <ENTER> "Podemos ver o conteúdo do acumulador alterado"
+
+- F043H - SCAN1 - Faz a Leitura do teclado 1 vez e seta o bit de carry
+                  quando uma tecla foi pressionada colocando seu valor
+                  ASCII no acumulador.
+- F832H - CLRSCR - Limpa a tela inteira de baixa resolução
+- F59DH - TABASC - Tabela ASCCI
+- FB02H - Leitura do teclado (SEM ANTBOUNCE)
+- FCA8H - WAIT - Atraso = (26+27*A+5*A^2) [us]
+- FDEDH - COUT - Mostra o caracter presente no acumulador de acordo 
+                 com o código
+- FF2DH - PRERR - Imprime a menssagem "ERR" seguido de um "BEEP"
+- FF4AH - IOSAVE - Salva todos os registradores nas posições:
+	A : 7F0H
+	X : 7F1H
+	Y : 7F2H
+	P : 7F3H
+	S : 7F4H
+
+- Teclado
+
+C000H - Escrita - Seleciona uma linha
+C010H - Leitura - Lê a coluna
 ```
