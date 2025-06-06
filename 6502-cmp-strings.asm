@@ -1,7 +1,7 @@
 ; Teste com o microprocessador 6502
 ; Compara duas strings retornando no acumulador
-; 00H - Iguais
-; 01H - Diferentes
+; 01H - Iguais
+; 00H - Diferentes
 
 REG1L	.EQU $11
 REG1H	.EQU $12
@@ -46,10 +46,10 @@ LOOP2	LDA (REG2L),Y
 	INY
 	JMP LOOP2
 
-IGUAL2	LDA #$00
+IGUAL2	LDA #$01
 	RTS
 
-DIF	LDA #$01
+DIF	LDA #$00
 	RTS
 
 String1	.text "String 1"
