@@ -20,6 +20,10 @@ Será gerado 2 arquivos:
 O arquivo .obj pode ser carregado diretamente no emulador do TK2000
 Memória->Importa (digite o "endereço base do programa" em "inteiro")
 
+O conjunto de instruções do 6502 pode ser visualizado:
+http://www.6502.org/users/obelisk/6502/instructions.html
+https://www.masswerk.at/6502/6502_instruction_set.html
+
 ## Memória do TK2000: 
 
 65536 posições dividida em páginas de 256 bytes = 256 páginas
