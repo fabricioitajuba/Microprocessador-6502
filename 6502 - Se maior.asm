@@ -1,0 +1,21 @@
+; Teste com o microprocessador 6502
+; Autor: Eng. Fabrício Ribeiro
+; Data: 06/06/2025
+;
+; Se maior retorna 1 no acumulador
+
+PRBYTE	.EQU $FDDA	;Imprime um byte em hexadecimal
+
+	.ORG $4000	;Início do programa
+	
+	LDA #$07	;Carrega acumulador com 07H
+	CMP #$07	;Compara com 07H
+	BEQ IGUAL	;Se igual, salta para IGUAL
+	BPL ROT		;Se maior, salta para ROT
+IGUAL	LDA #00		;Carrega o acumulador com 00H
+	JMP PRINT	;Salta para a impressão
+ROT	LDA #01		;Carrega o acumulador com 01H
+PRINT	JSR PRBYTE	;Imprime o resultado
+	RTS		;Retorna da sub-rotina
+
+	.END
