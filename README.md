@@ -23,7 +23,7 @@ Memória->Importa (digite o "endereço base do programa" em "inteiro")
 ## Memória do TK2000: 
 
 65536 posições dividida em páginas de 256 bytes = 256 páginas
-
+```
 RAM: 192 páginas - 0000H-BFFFH
 I/O:   1 página  - C000H-C0FFH
 ROM: 63 páginas  - C100H-FFFFH
@@ -63,3 +63,4 @@ C05AH - Selecionador de ROM
 C05BH - Selecionador de RAM
 C05EH - Linha que seleciona a tecla Ctrl (baixo)
 C05FH - Linha que seleciona a tecla Ctrl (alto)
+```
