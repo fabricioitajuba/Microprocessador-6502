@@ -62,7 +62,7 @@ _CMD1	LDA #CMD1 & $FF		;Armazena o
 	LDA #CMD1 >> 8		;da string do
 	STA REG2H		;comando CLEAR
 	JSR STR_CMP		;Compara as strings
-	CMP #$00		;Se for igual, executa o
+	CMP #$01		;Se for igual, executa o
 	BNE _CMD2		;comando. Caso diferente
 	JSR CMD_CLEAR		;passa para o próximo comando
 	JMP EXIT
@@ -73,7 +73,7 @@ _CMD2	LDA #CMD2 & $FF		;Armazena o
 	LDA #CMD2 >> 8		;da string do
 	STA REG2H		;comando EXIT
 	JSR STR_CMP		;Compara as strings
-	CMP #$00		;Se for igual, executa o
+	CMP #$01		;Se for igual, executa o
 	BNE ERRO		;comando. Caso diferente
 	JMP CMD_EXIT		;passa para o próximo comando
 	JMP EXIT
@@ -151,10 +151,10 @@ LOOP2	LDA (REG2L),Y
 	INY
 	JMP LOOP2
 
-IGUAL2	LDA #$00
+IGUAL2	LDA #$01
 	RTS
 
-DIF	LDA #$01
+DIF	LDA #$00
 	RTS
 
 ;*************************************
