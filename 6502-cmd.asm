@@ -1,7 +1,7 @@
 ; Teste com o microprocessador 6502
 ; Autor: Eng. Fabrício Ribeiro
 ; Data: 05/06/2025
-; Interpreta comandos
+; Interpreta comandos com argumentos
 ; Carregar o arquivo. 6502-cmd.obj no TK2000
 
 OFFSET	.EQU $10
@@ -30,30 +30,58 @@ CMD	LDA #$00		;Zera a posição
 	LDA #$A4		;Cursor
 	JSR COUT		;"$"
 
-LOOP	JSR SCAN1
-	BCC LOOP
-	CMP #$8D
-	BEQ ENTER
+LOOP	JSR SCAN1		;Lê o teclado e se nenhuma tecla
+	BCC LOOP		;foi pressionada, volta a ler
 
-	LDX OFFSET		;Armazena a 
-	STA BUFFER,X		;tecla pressionada
-	INX			;no buffer
-	STX OFFSET		;e incrementa o offset
+	CMP #$8D		;Verifica se a tecla ENTER
+	BEQ ENTER		;Foi pressionada
 
-	JSR COUT
-	JSR BOUNCE
-	JMP LOOP
+	CMP #$88		;Verifica se a tecla BACKSPACE
+	BEQ BCKSPC		;Foi pressionada
 
-ENTER	JSR BOUNCE
-	LDA #$00		;Adiciona
-	LDX OFFSET		;00H na última
-	STA BUFFER,X		;posição da
-	JSR CROUT		;string
+	LDX OFFSET		;Armazena a tecla
+	STA BUFFER,X		;pressionada no buffer
+	INX			;Incrementa offset
+	STX OFFSET		;guarda seu valor
+
+	JSR COUT		;Mostra a tecla pressionada no vídeo
+	JSR BOUNCE		;Trata o bounce da tecla
+	JMP LOOP		;Volta a ler uma tecla
+
+	;Trata tecla BACKSPACE
+BCKSPC	JSR BOUNCE		;Trata bounce do teclado
+	DEC CH			;Retorna 1 posição do cursor na horizontal
+	LDA #$A0		;Limpa a A0
+	JSR CARAC		;posição
+	DEC CH			;Retorna 1 posição do cursor na horizontal
+	DEC OFFSET		;Decrementa a posição de OFFSET
+	JMP LOOP		;Volta a ler uma tecla
+
+	;Trata tecla ENTER
+ENTER	JSR BOUNCE		;Trata bounce do teclado
+	LDA #$00		;# Adiciona
+	LDX OFFSET		;# 00H na última
+	STA BUFFER,X		;# posição da		
+	JSR CROUT		;Pula uma linha e retorna o cursor
+
+	;Copia o comando do buffer de teclado para o buffer de comando
+	LDX #$00		;Zera offset
+LOOPC	LDA BUFFER,X		;Carrega o caracter em BUFFER
+	CMP #$00		;Compara com #$00
+	BEQ BCOM		;Se igual, salta para BCON
+	CMP #$A0		;Compara com #$A0 "Espaço"
+	BEQ BCOM		;Se igual, salta para BCON
+	STA BCOMAND,X		;Caso não seja #$00 ou #$A0, guarda em BCOMAND
+	INX			;Incrementa offset
+	JMP LOOPC		;Volta a ler buffer
 
 	;Interpreta comandos
-	LDA #BUFFER & $FF	;Armazena o
+BCOM	LDA #$00		;Coloca #$00
+	STA BCOMAND,X		;depois do último caracter
+
+	LDA #BCOMAND & $FF	;Armazena o
 	STA REG1L		;endereço do
-	LDA #BUFFER >> 8	;Buffer do teclado
+	LDA #BCOMAND >> 8	;Buffer de comando
 	STA REG1H		;em REG1L e REG1H
 
 	;Comando CLEAR
@@ -85,7 +113,8 @@ ERRO	LDA #MSG_ERR & $FF	;Imprime
 	JSR PRINTF
 	JSR CROUT
 
-EXIT	JMP CMD
+EXIT	;RTS			;###### TESTE
+	JMP CMD			;Retorna para ler outro comando
 
 
 ;*************************************
@@ -166,5 +195,7 @@ CMD2	.byte $C5, $D8, $C9, $D4, 0		;EXIT
 
 	;Buffer do teclado
 BUFFER	.block 20	;Buffer com 20 posições
+	;Buffer de comando
+BCOMAND	.block 10	;Buffer para comando
 
 	.END
