@@ -4,6 +4,10 @@
 ; Interpreta comandos com argumentos
 ; Carregar o arquivo. 6502-cmd.obj no TK2000
 
+;Constantes
+MAXCOL	.EQU $14	;Máxima coluna do vídeo
+
+;Variáveis do sistema
 OFFSET	.EQU $10
 REG1L	.EQU $11
 REG1H	.EQU $12
@@ -11,9 +15,11 @@ REG2L	.EQU $13
 REG2H	.EQU $14
 AUX	.EQU $15
 
+;Variáveis do programa monitor
 CH	.EQU $0024	;Coluna (0-39)
 CV	.EQU $0025	;Linha (0-23)
 
+;Rotinas do programa monitor
 SCAN1	.EQU $F043	;Verifica 1 vez o teclado
 CLRSCR	.EQU $F832 	;Limpa a tela
 COUT	.EQU $FDED	;Imprime um caracter
@@ -21,14 +27,26 @@ WAIT	.EQU $FCA8	;Gera um delay
 CROUT	.EQU $FD8E	;Pula linha e retorna na primeira posição
 CARAC	.EQU $FDED 	;Imprime um caracter
 PRERR	.EQU $FF2D	;Imprime erro com beep
+BELL1	.EQU $FBDD	;Beep de curta duração
+SETINV	.EQU $FE80	;Converte vídeo para o modo inverso
+SETNORM	.EQU $FE84	;Retorna o vídeo para o modo normal
 
 	.ORG $4000
 
 	JSR BOUNCE
+
+	LDA #MSG_OS & $FF	;Imprime
+	STA REG2L		;menssagem
+	LDA #MSG_OS >> 8	;de
+	STA REG2H		;entrada no
+	JSR PRINTF		;sistema operacional
+	JSR CROUT		;Pula linha e retorna posição 1
+	JSR BELL1		;Beep
+
 CMD	LDA #$00		;Zera a posição
 	STA OFFSET		;de offset
-	LDA #$A4		;Cursor
-	JSR COUT		;"$"
+	LDA #$A3		;Cursor
+	JSR COUT		;"#"
 
 LOOP	JSR SCAN1		;Lê o teclado e se nenhuma tecla
 	BCC LOOP		;foi pressionada, volta a ler
@@ -36,26 +54,66 @@ LOOP	JSR SCAN1		;Lê o teclado e se nenhuma tecla
 	CMP #$8D		;Verifica se a tecla ENTER
 	BEQ ENTER		;Foi pressionada
 
-	CMP #$88		;Verifica se a tecla BACKSPACE
+	CMP #$88		;Verifica se a tecla BACKSPACE ou SETA ESQUERDA
 	BEQ BCKSPC		;Foi pressionada
+
+	CMP #$95		;Verifica se a tecla SETA DIREITA
+	BEQ SDIR		;Foi pressionada
 
 	LDX OFFSET		;Armazena a tecla
 	STA BUFFER,X		;pressionada no buffer
 	INX			;Incrementa offset
-	STX OFFSET		;guarda seu valor
+
+	CPX #MAXCOL+1		;
+	BNE P4
+	DEX
+	DEC CH
+
+P4	STX OFFSET		;guarda seu valor
 
 	JSR COUT		;Mostra a tecla pressionada no vídeo
 	JSR BOUNCE		;Trata o bounce da tecla
 	JMP LOOP		;Volta a ler uma tecla
 
-	;Trata tecla BACKSPACE
+	;Trata tecla BACKSPACE ou SETA ESQUERDA
 BCKSPC	JSR BOUNCE		;Trata bounce do teclado
+
 	DEC CH			;Retorna 1 posição do cursor na horizontal
-	LDA #$A0		;Limpa a A0
+	LDA CH			;Limita o
+	CMP #$00		;cursor
+	BNE P1			;na segunda
+	INC CH			;coluna
+
+P1	LDA #$A0		;Limpa a A0
 	JSR CARAC		;posição
 	DEC CH			;Retorna 1 posição do cursor na horizontal
+
 	DEC OFFSET		;Decrementa a posição de OFFSET
-	JMP LOOP		;Volta a ler uma tecla
+	LDA OFFSET		;Limita 
+	CMP #$FF		;OFFSET
+	BNE P2			;em
+	INC OFFSET		;00H
+
+P2	JMP LOOP		;Volta a ler uma tecla
+
+	;Trata tecla SETA DIREITA
+SDIR	JSR BOUNCE		;Trata bounce do teclado
+
+	LDX OFFSET
+	LDA #$00
+	STA BUFFER,X
+
+	LDA #$A0		;Imprime espaço
+	JSR CARAC		;posição
+
+	INC OFFSET		;Incrementa a posição de OFFSET
+	LDA OFFSET
+	CMP #MAXCOL+1
+	BNE P3
+	DEC OFFSET
+	DEC CH
+
+P3	JMP LOOP		;Volta a ler uma tecla
 
 	;Trata tecla ENTER
 ENTER	JSR BOUNCE		;Trata bounce do teclado
@@ -111,9 +169,10 @@ ERRO	LDA #MSG_ERR & $FF	;Imprime
 	LDA #MSG_ERR >> 8	;de
 	STA REG2H		;erro
 	JSR PRINTF
-	JSR CROUT
+	JSR CROUT		;Pula linha e retorna posição 1
+	JSR BELL1		;Beep
 
-EXIT	;RTS			;###### TESTE
+EXIT	;RTS			;################################### TESTE
 	JMP CMD			;Retorna para ler outro comando
 
 
@@ -133,6 +192,7 @@ CMD_CLEAR
 ; e retorna ao monitor
 ;*************************************
 CMD_EXIT
+	JSR BELL1		;Beep
 	RTS
 
 ;*************************************
@@ -189,6 +249,7 @@ DIF	LDA #$00
 ;*************************************
 ; Strigs dos comandos
 ;*************************************
+MSG_OS	.byte $D4, $CB, $CF, $D3, $AD, $D6, $B0, $AE, $B1, $A0, $AD, $A0, $B1, $B9, $B8, $B5, $AD, $B2, $B0, $B2, $B5, 0
 MSG_ERR	.byte $C5, $D2, $D2, $CF, $A1, 0	;ERRO
 CMD1	.byte $C3, $CC, $C5, $C1, $D2, 0	;CLEAR
 CMD2	.byte $C5, $D8, $C9, $D4, 0		;EXIT
