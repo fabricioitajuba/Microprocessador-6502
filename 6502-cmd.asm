@@ -160,21 +160,38 @@ _CMD2	LDA #CMD2 & $FF		;Armazena o
 	STA REG2H		;comando EXIT
 	JSR STR_CMP		;Compara as strings
 	CMP #$01		;Se for igual, executa o
-	BNE ERRO		;comando. Caso diferente
+	BNE _CMD3		;comando. Caso diferente
 	JMP CMD_EXIT		;passa para o próximo comando
+
+	;Comando CP
+_CMD3	LDA #CMD3 & $FF		;Armazena o
+	STA REG2L		;endereço do
+	LDA #CMD3 >> 8		;da string do
+	STA REG2H		;comando CP
+	JSR STR_CMP		;Compara as strings
+	CMP #$01		;Se for igual, executa o
+	BNE ERRO		;comando. Caso diferente
+	JSR CMD_CP		;passa para o próximo comando
 	JMP EXIT
 
-ERRO	LDA #MSG_ERR & $FF	;Imprime
+ERRO	JSR MSG_ERRO
+
+EXIT	;RTS			;################################### TESTE
+	JMP CMD			;Retorna para ler outro comando
+
+
+;*************************************
+; Imprime uma mensagem de erro com beep
+;*************************************
+MSG_ERRO
+	LDA #MSG_ERR & $FF	;Imprime
 	STA REG2L		;menssagem
 	LDA #MSG_ERR >> 8	;de
 	STA REG2H		;erro
 	JSR PRINTF
 	JSR CROUT		;Pula linha e retorna posição 1
 	JSR BELL1		;Beep
-
-EXIT	;RTS			;################################### TESTE
-	JMP CMD			;Retorna para ler outro comando
-
+	RTS
 
 ;*************************************
 ; Comando CLEAR, limpa a tela e coloca
@@ -185,6 +202,117 @@ CMD_CLEAR
 	LDA #$00		;Coloca o
 	STA CH			;Cursor na
 	STA CV			;Primeira posição
+	RTS
+
+;************************************************
+; Comando CP, copia bytes de uma posição
+; para outra.
+; #CP "end.inicial" "end.final" "numero de bytes"
+; Exemplo:
+; #CP 4000 5000 30
+;************************************************
+
+	;Verifica se o comando foi digitado certo
+CMD_CP	LDX #$02
+	LDA BUFFER,X		;Lê a posição 3 do BUFFER
+	CMP #$A0
+	BEQ T1A 
+	JMP CMD_CP_ERRO
+
+T1A	LDX #$07
+	LDA BUFFER,X		;Lê a posição 8 do BUFFER
+	CMP #$AD
+	BEQ T1B
+	JMP CMD_CP_ERRO
+
+T1B	LDX #$0C
+	LDA BUFFER,X		;Lê a posição 13 do BUFFER
+	CMP #$A0
+	BEQ CMP_CP_INI 
+
+CMD_CP_ERRO
+	JSR MSG_ERRO
+	RTS
+	
+	;Copia o endereço inicial do bloco para o registro R1
+CMP_CP_INI
+	LDX #$03
+	LDA BUFFER,X		;Lê a posição 3 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ASL A
+	ASL A
+	ASL A
+	ASL A
+	STA AUX
+
+	LDX #$04
+	LDA BUFFER,X		;Lê a posição 5 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ORA AUX
+	STA REG1H
+
+	LDX #$05
+	LDA BUFFER,X		;Lê a posição 6 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ASL A
+	ASL A
+	ASL A
+	ASL A
+	STA AUX
+
+	LDX #$06
+	LDA BUFFER,X		;Lê a posição 7 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ORA AUX
+	STA REG1L
+
+	;Copia o endereço inicial do bloco para o registro R2
+	LDX #$08
+	LDA BUFFER,X		;Lê a posição 9 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ASL A
+	ASL A
+	ASL A
+	ASL A
+	STA AUX
+
+	LDX #$09
+	LDA BUFFER,X		;Lê a posição 10 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ORA AUX
+	STA REG2H
+
+	LDX #$0A
+	LDA BUFFER,X		;Lê a posição 11 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ASL A
+	ASL A
+	ASL A
+	ASL A
+	STA AUX
+
+	LDX #$0B
+	LDA BUFFER,X		;Lê a posição 12 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ORA AUX
+	STA REG2L
+
+	;Copia número de bytes para a variável AUX
+	LDX #$0D
+	LDA BUFFER,X		;Lê a posição 14 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ASL A
+	ASL A
+	ASL A
+	ASL A
+	STA AUX
+
+	LDX #$0E
+	LDA BUFFER,X		;Lê a posição 15 do BUFFER
+	JSR ASC_NUM		;Converte ASC para NUMERO
+	ORA AUX
+	STA AUX
+
 	RTS
 
 ;*************************************
@@ -246,6 +374,16 @@ IGUAL2	LDA #$01
 DIF	LDA #$00
 	RTS
 
+;*******************************************************
+; Converte de ASC para Hexadecinal
+; Retorna no acumulador, o valor Hexadecimal do byte ASC
+;*******************************************************
+ASC_NUM
+	SEC
+	SBC #$B0		;Subtrai B0H
+	AND #$0F
+	RTS
+
 ;*************************************
 ; Strigs dos comandos
 ;*************************************
@@ -253,6 +391,7 @@ MSG_OS	.byte $D4, $CB, $CF, $D3, $AD, $D6, $B0, $AE, $B1, $A0, $AD, $A0, $B1, $B
 MSG_ERR	.byte $C5, $D2, $D2, $CF, $A1, 0	;ERRO
 CMD1	.byte $C3, $CC, $C5, $C1, $D2, 0	;CLEAR
 CMD2	.byte $C5, $D8, $C9, $D4, 0		;EXIT
+CMD3	.byte $C3, $D0, 0			;CP
 
 	;Buffer do teclado
 BUFFER	.block 20	;Buffer com 20 posições
