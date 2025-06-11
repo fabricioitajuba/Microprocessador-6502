@@ -176,7 +176,7 @@ _CMD3	LDA #CMD3 & $FF		;Armazena o
 
 ERRO	JSR MSG_ERRO
 
-EXIT	;RTS			;################################### TESTE
+EXIT	RTS			;################################### TESTE
 	JMP CMD			;Retorna para ler outro comando
 
 
@@ -313,6 +313,18 @@ CMP_CP_INI
 	ORA AUX
 	STA AUX
 
+	;Move o bloco
+	LDX AUX
+	LDY #$00
+CP_ROT	CPX #$00
+	BEQ END_CMD_CP
+	LDA (REG1L),Y
+	STA (REG2L),Y
+	INY
+	DEX
+	JMP CP_ROT
+
+END_CMD_CP
 	RTS
 
 ;*************************************
