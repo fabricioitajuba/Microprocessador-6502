@@ -7,6 +7,8 @@
 ; Retorna 0 se o primeiro número é igual ao segundo
 ; Retorna 1 se o primeiro número é menor que o segundo
 ; Retorna 2 se o primeiro número é maior que o segundo
+;
+; Status: Não TESTADO!
 
 REG1L	.EQU $11 ;Primeiro
 REG1H	.EQU $12 ;número
@@ -18,17 +20,20 @@ AUX	.EQU $15
 
 	.ORG $4000
 
-	;Dividendo FFFFH
-	LDA #$00
-	STA REG1H
+	;Dividendo FF00H
 	LDA #$FF
+	STA REG1H
+	LDA #$00
 	STA REG1L
 
-	;Divisor 0000H
-	LDA #$FF
-	STA REG2H
+	;Divisor 000FH
 	LDA #$00
+	STA REG2H
+	LDA #$0F
 	STA REG2L
+
+	LDA #$FF
+	STA AUX
 
 	JSR CMP_16b
 	STA AUX
@@ -42,7 +47,7 @@ AUX	.EQU $15
 CMP_16b	LDA REG1H
 	CMP REG2H
 	BEQ IGUAL1
-	JMP MENOR1
+	JMP MENOR
 IGUAL1	LDA REG1L
 	CMP REG2L
 	BEQ IGUAL2
@@ -52,33 +57,24 @@ IGUAL2	LDA #$00
 
 	;Compara se menor
 MENOR	LDA REG1H
+	CMP REG2H
+	BEQ MENOR1
+	LDA REG1H
 	SEC
 	CMP REG2H
-	BCS MENOR1
-	LDA #$01
-	JMP FIM_CMP
+	BCC MENOR2
+	JMP MAIOR
 MENOR1	LDA REG1L
 	SEC
 	CMP REG2L
 	BCC MENOR2
-	JMP MAIOR
+	JMP MAIOR	
 MENOR2	LDA #$01
 	JMP FIM_CMP
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;Compara se maior
-MAIOR	LDA REG1H
-	SEC
-	CMP REG2H
-	BCS MAIOR1
-	LDA #$01
-	JMP FIM_CMP
-MAIOR1	LDA REG1L
-	SEC
-	CMP REG2L
-	BCS MAIOR2
-	LDA #$01
-	JMP FIM_CMP
-MAIOR2	LDA #$02
+MAIOR	LDA #$02
 
 FIM_CMP	RTS
 
