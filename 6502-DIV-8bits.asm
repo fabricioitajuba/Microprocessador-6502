@@ -33,7 +33,7 @@ PRERR		.EQU $FF2D	;Mensagem de Erro caso tenha
 ; no Quociente e Resto. 
 ;********************************************************
 DIV_16b	LDA DIVIDENDO
-	PHA
+	PHA	
 
 	LDA #$00
 	STA QUOCIENTE
@@ -44,87 +44,26 @@ DIV_16b	LDA DIVIDENDO
 	BNE ROT
 	JSR PRERR
 	JMP FIM
-
-ROT	JSR SUB_8b
-	JSR SUM_8b
-	JSR CMP_8b
 	
-	CMP #$01
-	BEQ FIM
-
-	LDA RESTO
-	STA DIVIDENDO
-
-	JMP ROT
-
-FIM	PLA
-	STA DIVIDENDO
-	RTS
-
-;********************************************************
-; Comparação de 2 números de 8bits
-; Compara 2 números de 8 bits e retorna no
-; Acumulador o resultado da operação:
-;
-; Retorna 00H se o primeiro número é igual ao segundo
-; Retorna 01H se o primeiro número é menor que o segundo
-; Retorna 02H se o primeiro número é maior que o segundo
-;********************************************************
-	;Compara se igual
-CMP_8b	LDA RESTO
-	CMP DIVISOR
-	BNE CMP_8b_LB1
-	LDA #$00
-	JMP FIM_CMP
-
-	;Compara se menor
-CMP_8b_LB1	
-	SEC
-	CMP DIVISOR
-	BCS CMP_8b_LB2
-	LDA #$01
-	JMP FIM_CMP
-	
-	;Compara se maior
-CMP_8b_LB2
-	LDA #$02
-
-FIM_CMP	RTS
-
-;********************************************************
-; Subtração de 2 números de 8bits
-;********************************************************
-SUB_8b	LDA DIVIDENDO
-	CMP DIVISOR
-
-	BCC MENOR
-
-	LDA DIVIDENDO
+ROT	LDA DIVIDENDO
 	SEC
 	SBC DIVISOR
 	STA RESTO
 
-	JMP FIM_SUB
+	INC QUOCIENTE
 
-MENOR	LDA DIVISOR
-	SEC
-	SBC DIVIDENDO
-	STA RESTO
-	LDA #$FF
-	SEC
-	SBC RESTO
-	STA RESTO
-	INC RESTO
-
-FIM_SUB	RTS
-
-;*********************************
-;Soma de 2 números de 8bits
-;*********************************
-SUM_8b	LDA QUOCIENTE
+	LDA RESTO
 	CLC
-	ADC #$01
-	STA QUOCIENTE
+	CMP DIVISOR		
+	BCC EXIT
+
+	LDA RESTO
+	STA DIVIDENDO
+	
+	JMP ROT
+
+EXIT	PLA
+	STA DIVIDENDO
 	RTS
 
 	.END
