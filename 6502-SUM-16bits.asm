@@ -2,42 +2,43 @@
 ; Autor: Eng. Fabrício Ribeiro
 ; Data: 12/06/2025
 ; Soma em 16bits
-; NUM1 - REG1
-; NUM2 - REG2
-; RES - REG3 - Resultado
-; CARRY - (0 - resultado < 16bits / 1 - resultado > 16bits)
+; NUM1
+; NUM2
+; RES 
 ;
-;   REG1H REG1L
-; + REG2H REG2L
+;   NUM1H NUM1L
+; + NUM2H NUM2L
 ;--------------
-;   REG3H REG3L
+;   RESH RESL
 ;Ex:
 ;   7DEF
 ; + 1CDE
 ;--------
 ;   9ACD
 
-REG1L	.EQU $11
-REG1H	.EQU $12
-REG2L	.EQU $13
-REG2H	.EQU $14
-REG3L	.EQU $15
-REG3H	.EQU $16
-CARRY	.EQU $17
+NUM1L	.EQU $11	;Primeiro
+NUM1H	.EQU $12	;Número
+
+NUM2L	.EQU $13	;Segundo
+NUM2H	.EQU $14	;Número
+
+RESL	.EQU $15	;Resultado
+RESH	.EQU $16	;da soma
+
 
 	.ORG $4000
 
 	;7DEFH
 	LDA #$7D
-	STA REG1H
+	STA NUM1H
 	LDA #$EF
-	STA REG1L
+	STA NUM1L
 
 	;1CDEH
 	LDA #$1C
-	STA REG2H
+	STA NUM2H
 	LDA #$DE
-	STA REG2L
+	STA NUM2L
 
 	JSR SUM_16b
 
@@ -46,26 +47,16 @@ CARRY	.EQU $17
 ;*********************************
 ;Soma de 2 números de 16bits
 ;*********************************
-SUM_16b	LDA #$00
-	STA REG3L
-	STA REG3H
-	STA CARRY
-	LDA REG1L
+SUM_16b	CLD
+	LDA NUM1L
 	CLC
-	ADC REG2L
-	BCC SUM2
-	INC REG3H
-SUM2	STA REG3L
-	LDA REG3H
-	CLC
-	ADC REG2H
-	BCC COND1
-	INC CARRY
-COND1	CLC
-	ADC REG1H	
-	BCC FIM
- 	INC CARRY
-FIM	STA REG3H
+	ADC NUM2L
+	STA RESL
+	LDA NUM1H
+	ADC NUM2H
+	STA RESH
+	LDA RESH
+
 	RTS
 
 	.END
