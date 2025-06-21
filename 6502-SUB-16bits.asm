@@ -2,40 +2,43 @@
 ; Autor: Eng. Fabrício Ribeiro
 ; Data: 12/06/2025
 ; Subtração em 16bits
-; NUM1 - REG1 - Maior número
-; NUM2 - REG2 - Menor número
-; RES - REG3 - Resultado
+; NUM1
+; NUM2
+; RES 
 ;
-;   REG1H REG1L
-; - REG2H REG2L
+;   NUM1H NUM1L
+; - NUM2H NUM2L
 ;--------------
-;   REG3H REG3L
+;   RESH RESL
 ;Ex:
-;   E3B7
-; - C3F2
+;   7DEF
+; - 1CDE
 ;--------
-;   1FC5
+;   9ACD
 
-REG1L	.EQU $11
-REG1H	.EQU $12
-REG2L	.EQU $13
-REG2H	.EQU $14
-REG3L	.EQU $15
-REG3H	.EQU $16
+NUM1L	.EQU $11	;Primeiro
+NUM1H	.EQU $12	;Número
+
+NUM2L	.EQU $13	;Segundo
+NUM2H	.EQU $14	;Número
+
+RESL	.EQU $15	;Resultado
+RESH	.EQU $16	;da soma
+
 
 	.ORG $4000
 
-	;E3B7H
-	LDA #$E3
-	STA REG1H
-	LDA #$B7
-	STA REG1L
+	;7DEFH
+	LDA #$7D
+	STA NUM1H
+	LDA #$EF
+	STA NUM1L
 
-	;C3F2H
-	LDA #$C3
-	STA REG2H
-	LDA #$F2
-	STA REG2L
+	;1CDEH
+	LDA #$1C
+	STA NUM2H
+	LDA #$DE
+	STA NUM2L
 
 	JSR SUB_16b
 
@@ -44,44 +47,14 @@ REG3H	.EQU $16
 ;*********************************
 ;Subtração de 2 números de 16bits
 ;*********************************
-SUB_16b
-	LDA REG1H
-	STA REG3H
-
-	LDA REG1L
-	STA REG3L
-
-	LDA REG1L
-	CMP REG2L
-
-	BCC MENOR
-
-MAIOR_IGUAL
+SUB_16b	CLD
+	LDA NUM1L
 	SEC
-	SBC REG2L
-	STA REG3L
-	JMP FIM
-
-MENOR	LDA REG2L
-	SEC
-	SBC REG1L
-	STA REG3L
-	LDA #$FF
-	SEC
-	SBC REG3L
-	STA REG3L
-	INC REG3L
-	JMP FIM1
-
-SUB	CLC
-	SBC REG2L
-	STA REG3L
-FIM1	DEC REG3H
-
-FIM	LDA REG3H	
-	SEC
-	SBC REG2H
-	STA REG3H
+	SBC NUM2L
+	STA RESL
+	LDA NUM1H
+	SBC NUM2H
+	STA RESH
 
 	RTS
 
