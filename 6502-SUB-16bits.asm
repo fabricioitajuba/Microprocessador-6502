@@ -1,6 +1,6 @@
 ; Teste com o microprocessador 6502
 ; Autor: Eng. Fabrício Ribeiro
-; Data: 12/06/2025
+; Data: 20/06/2025
 ; Subtração em 16bits
 ; NUM1
 ; NUM2
@@ -14,7 +14,7 @@
 ;   7DEF
 ; - 1CDE
 ;--------
-;   9ACD
+;   6111
 
 NUM1L	.EQU $11	;Primeiro
 NUM1H	.EQU $12	;Número
@@ -23,7 +23,7 @@ NUM2L	.EQU $13	;Segundo
 NUM2H	.EQU $14	;Número
 
 RESL	.EQU $15	;Resultado
-RESH	.EQU $16	;da soma
+RESH	.EQU $16	;da subtração
 
 
 	.ORG $4000
